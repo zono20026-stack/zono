@@ -51,6 +51,15 @@ const authLimiter = rateLimit({
 // Serve assets (logo, waybill templates)
 app.use('/assets', express.static(path.join(__dirname, '../../assets')));
 
+// Direct App Package Download Endpoint
+app.get('/download/app', (_req: Request, res: Response) => {
+  const archivePath = path.resolve(__dirname, '../../zono-app-release.zip');
+  if (fs.existsSync(archivePath)) {
+    return res.download(archivePath, 'zono-shipping-erp-v1.0.zip');
+  }
+  return res.status(404).json({ success: false, message: 'ملف التطبيق غير موجود' });
+});
+
 // Health & Readiness Probes for high concurrency / Load Balancers
 app.get('/health', async (_req: Request, res: Response) => {
   try {
