@@ -1,0 +1,41 @@
+# ==============================================================================
+# Render Blueprint Specification for ZONO Enterprise Shipping ERP
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================================
+
+version: "1"
+
+services:
+  # 1. Unified Web Service (Express API + Vite React Dashboard)
+  - type: web
+    name: zono-shipping-erp
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zono-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*"
+
+databases:
+  # 2. Managed PostgreSQL Database
+  - name: zono-db
+    databaseName: zono_shipping_db
+    user: zono_admin
+    plan: starter
+    region: frankfurt
