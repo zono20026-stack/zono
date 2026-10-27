@@ -38,3 +38,15 @@ mobile/build/
 mobile/.dart_tool/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
+
+# Binaries, tools & tunnels
+cloudflared.exe
+*.exe
+
+# Local text files with keys
+New Text Document.txt
+*.txt
+
+# Windows shortcuts
+*.lnk
+*.url
