@@ -1,0 +1,26 @@
+{
+  "name": "ZONO Delivery ERP | زونو للشحن",
+  "short_name": "ZONO زونو",
+  "description": "ZONO Delivery Services - زونو لخدمات التوصيل والشحن السريع واللوجستيات والمحاسبة",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0F17",
+  "theme_color": "#FF6600",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
