@@ -91,7 +91,7 @@ export const App: React.FC = () => {
           onOpenPublicTracking={() => setIsPublicTrackingActive(true)}
         />
 
-        <div style={{ display: 'flex', flex: 1 }}>
+        <div className="app-body-layout">
           {/* Sidebar */}
           {user && !isPublicTrackingActive && (
             <Sidebar
