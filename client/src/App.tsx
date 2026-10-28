@@ -139,9 +139,9 @@ export const App: React.FC = () => {
         <div className="app-body-layout" style={{ width: '100%' }}>
           {/* Main Content Area - Full Width without Sidebar */}
           <main className="content-container" style={{ width: '100%', maxWidth: '1440px', margin: '0 auto' }}>
-            {/* When inside any sub-module: Clean header to return to main circular hub with one click */}
+            {/* When inside any sub-module: Sticky header to return to main circular hub with one click */}
             {currentTab !== 'portal' && user && !isPublicTrackingActive && (
-              <div className="portal-subview-nav-header">
+              <div className="main-portal-sticky-bar">
                 <button
                   type="button"
                   onClick={() => handleSelectTab('portal')}

@@ -144,7 +144,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .content-container {
@@ -1172,6 +1172,85 @@ aside.sidebar,
   color: var(--text-muted);
   font-weight: 500;
   margin-top: 2px;
+}
+
+/* ==============================================================================
+   MAIN PORTAL STICKY RETURN BAR
+   Fixed at the top below navbar, page content smoothly scrolls underneath
+   ============================================================================== */
+.main-portal-sticky-bar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 70px;
+  z-index: 38;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  transition: box-shadow 0.2s ease, top 0.2s ease;
+}
+
+.back-to-portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  padding: 9px 18px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(255, 102, 0, 0.22);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.back-to-portal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.35);
+}
+
+.portal-subview-title-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.portal-subview-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.portal-subview-badge {
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 6px 14px;
+}
+
+@media (max-width: 768px) {
+  .main-portal-sticky-bar {
+    top: 54px;
+    padding: 10px 14px;
+    border-radius: var(--radius-lg);
+    gap: 8px;
+  }
+
+  .back-to-portal-btn {
+    font-size: 0.85rem;
+    padding: 7px 12px;
+  }
+
+  .portal-subview-label {
+    display: none;
+  }
 }
 
 /* ==============================================================================
