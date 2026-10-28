@@ -43,63 +43,56 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
   const hubs = [
     {
       id: 'dashboard',
-      label: language === 'ar' ? 'لوحة المؤشرات والتحكم' : 'KPI Dashboard',
-      subtitle: language === 'ar' ? 'نظرة عامة والتحليلات' : 'Analytics & Stats',
-      icon: <LayoutDashboard size={28} />,
+      label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard',
+      icon: <LayoutDashboard size={30} />,
       colorClass: 'hub-orange',
       badge: language === 'ar' ? 'مؤشرات' : 'KPIs',
       visible: true,
     },
     {
       id: 'shipments',
-      label: language === 'ar' ? 'إدارة الشحنات والطرود' : 'Shipments & Parcels',
-      subtitle: language === 'ar' ? 'التسجيل والمانفست والتسليم' : 'Orders & Dispatch',
-      icon: <Package size={28} />,
+      label: language === 'ar' ? 'الشحنات والطرود' : 'Shipments',
+      icon: <Package size={30} />,
       colorClass: 'hub-blue',
       badge: language === 'ar' ? 'شحن فوري' : 'Live',
       visible: true,
     },
     {
       id: 'hr',
-      label: language === 'ar' ? 'الموارد البشرية والرواتب' : 'HR & Payroll',
-      subtitle: language === 'ar' ? 'الموظفين والحضور والمسيرات' : 'Staff, Shifts & Payroll',
-      icon: <Briefcase size={28} />,
+      label: language === 'ar' ? 'الموارد البشرية' : 'HR & Payroll',
+      icon: <Briefcase size={30} />,
       colorClass: 'hub-purple',
       badge: language === 'ar' ? 'جديد ZONO' : 'New',
       visible: isHrAllowed,
     },
     {
       id: 'finance',
-      label: language === 'ar' ? 'المالية وتسوية العهد' : 'Finance & Treasury',
-      subtitle: language === 'ar' ? 'العهد والتحصيلات والخزينة' : 'Vault, Cash & Ledger',
-      icon: <Wallet size={28} />,
+      label: language === 'ar' ? 'المالية والخزينة' : 'Finance',
+      icon: <Wallet size={30} />,
       colorClass: 'hub-amber',
       badge: language === 'ar' ? 'حسابات' : 'Vault',
       visible: isFinanceAllowed,
     },
     {
       id: 'directory',
-      label: language === 'ar' ? 'دليل التكويد والأطراف' : 'Directory & Partners',
-      subtitle: language === 'ar' ? 'العملاء، المندوبين، والتجار' : 'Couriers, Clients & Fleet',
-      icon: <Users size={28} />,
+      label: language === 'ar' ? 'دليل التكويد والأطراف' : 'Directory',
+      icon: <Users size={30} />,
       colorClass: 'hub-green',
       badge: language === 'ar' ? 'أطراف' : 'Masters',
       visible: true,
     },
     {
       id: 'tracking',
-      label: language === 'ar' ? 'التتبع الحي بالـ GPS' : 'Live Tracking',
-      subtitle: language === 'ar' ? 'تتبع فوري لمسار الشحنات' : 'GPS Tracking',
-      icon: <Compass size={28} />,
+      label: language === 'ar' ? 'تتبع الشحنات' : 'Live Tracking',
+      icon: <Compass size={30} />,
       colorClass: 'hub-teal',
-      badge: language === 'ar' ? 'عام' : 'Public',
+      badge: language === 'ar' ? 'GPS' : 'GPS',
       visible: true,
     },
     {
       id: 'branches',
-      label: language === 'ar' ? 'إدارة الفروع والمخازن' : 'Branches & Hubs',
-      subtitle: language === 'ar' ? 'المراكز ومناطق التوزيع' : 'Hubs & Pricing Zones',
-      icon: <Building2 size={28} />,
+      label: language === 'ar' ? 'الفروع والمخازن' : 'Branches',
+      icon: <Building2 size={30} />,
       colorClass: 'hub-indigo',
       badge: language === 'ar' ? 'فروع' : 'Hubs',
       visible: isBranchesAllowed,
@@ -107,41 +100,41 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
   ];
 
   return (
-    <div className="zono-circular-launcher-container">
-      {/* Executive Welcome & Greeting Header */}
-      <div className="zono-launcher-welcome-banner">
+    <div className="zono-circular-launcher-container white-theme-launcher">
+      {/* Clean White Welcome Header */}
+      <div className="zono-launcher-welcome-banner-light">
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-          <div className="zono-pulse-orb">
+          <div className="zono-pulse-orb-light">
             <span className="live-pulse-dot" />
           </div>
           <div>
-            <h2 className="launcher-main-greeting">
+            <h2 className="launcher-main-greeting-light">
               {language === 'ar'
                 ? `مرحباً بك، ${user?.name || 'مستخدم النظام'} 👋`
                 : `Welcome back, ${user?.name || 'User'} 👋`}
             </h2>
-            <p className="launcher-sub-greeting">
+            <p className="launcher-sub-greeting-light">
               {language === 'ar'
-                ? 'بوابة تشغيل منظومة زونو اللوجستية الذكية | انقر على أي قسم لفتح شاشته مباشرة'
-                : 'ZONO Smart Logistics Hub | Click any circular module to open its screen directly'}
+                ? 'بوابة تشغيل منظومة زونو اللوجستية الذكية | انقر على أي دائرة لفتح القسم مباشرة'
+                : 'ZONO Smart Logistics Portal | Tap any circle to launch module'}
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div className="badge badge-orange" style={{ fontSize: '0.82rem', padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <ShieldCheck size={14} />
+          <div className="badge badge-orange" style={{ fontSize: '0.85rem', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <ShieldCheck size={15} />
             <span>{getRoleLabel(user?.role)}</span>
           </div>
-          <div className="badge badge-green" style={{ fontSize: '0.82rem', padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <CheckCircle2 size={14} />
+          <div className="badge badge-green" style={{ fontSize: '0.85rem', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <CheckCircle2 size={15} />
             <span>{language === 'ar' ? 'متصل ومحمي' : 'Online & Secure'}</span>
           </div>
         </div>
       </div>
 
-      {/* Circular Hubs Grid */}
-      <div className="zono-circular-hubs-grid">
+      {/* Pure Circles Grid (No Boxes / No Rectangular Borders) */}
+      <div className="zono-pure-circles-grid">
         {hubs.filter((h) => h.visible).map((hub) => {
           const isActive = currentTab === hub.id;
           return (
@@ -149,10 +142,10 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
               key={hub.id}
               type="button"
               onClick={() => onSelectTab(hub.id)}
-              className={`zono-circle-hub-btn ${hub.colorClass} ${isActive ? 'is-active' : ''}`}
+              className={`zono-pure-circle-item ${hub.colorClass} ${isActive ? 'is-active' : ''}`}
               title={hub.label}
             >
-              <div className="circle-bubble-outer">
+              <div className="zono-free-circle">
                 <div className="circle-bubble-inner">
                   {hub.icon}
                 </div>
@@ -160,21 +153,20 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
                   <span className="circle-bubble-badge">{hub.badge}</span>
                 )}
               </div>
-              <span className="circle-hub-label">{hub.label}</span>
-              <span className="circle-hub-subtitle">{hub.subtitle}</span>
+              <span className="zono-circle-title">{hub.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* System Status Strip at bottom of launcher */}
-      <div className="zono-launcher-status-strip">
+      {/* System Status Strip at bottom */}
+      <div className="zono-launcher-status-strip-light">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', display: 'inline-block' }} />
-          <span>{language === 'ar' ? 'خادم ZONO السحابي: متزامن ويعمل بكفاءة 100%' : 'ZONO Cloud Server: Synced & 100% Operational'}</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--accent-green)', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)' }} />
+          <span>{language === 'ar' ? 'خادم ZONO وقاعدة بيانات PostgreSQL 16: متصل ومتزامن لحظياً' : 'ZONO PostgreSQL 16 Server: Connected & Live Synced'}</span>
         </div>
-        <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>
-          {language === 'ar' ? 'قاعدة بيانات PostgreSQL 16 مشفرة' : 'Encrypted PostgreSQL 16 Database'}
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+          {language === 'ar' ? 'نظام النقل والتوزيع والشحن الموحد' : 'Unified Logistics & Courier ERP Platform'}
         </div>
       </div>
     </div>

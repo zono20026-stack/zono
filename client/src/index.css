@@ -805,64 +805,64 @@ aside.sidebar,
 }
 
 /* ==============================================================================
-   ZONO CIRCULAR FEATURE HUBS (Springboard Launcher)
+   ZONO CIRCULAR FEATURE HUBS (Springboard Launcher) - White & Pure Circles
    ============================================================================== */
-.zono-circular-launcher-container {
-  background: linear-gradient(135deg, #0B0F19 0%, #161F30 100%);
-  border: 1px solid var(--border-orange);
+.zono-circular-launcher-container.white-theme-launcher {
+  background: #FFFFFF !important;
+  border: 1px solid var(--border-subtle) !important;
   border-radius: var(--radius-xl);
-  padding: 24px 28px;
+  padding: 28px 24px;
   margin-bottom: 24px;
-  box-shadow: 0 16px 36px -8px rgba(255, 102, 0, 0.18), 0 6px 12px -4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
-.zono-launcher-welcome-banner {
+.zono-launcher-welcome-banner-light {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
   padding-bottom: 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid var(--border-subtle);
   flex-wrap: wrap;
   gap: 14px;
 }
 
-.zono-pulse-orb {
+.zono-pulse-orb-light {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 102, 0, 0.15);
+  background: rgba(255, 102, 0, 0.12);
   border: 1.5px solid var(--primary-orange);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.launcher-main-greeting {
+.launcher-main-greeting-light {
   font-size: 1.35rem;
   font-weight: 900;
-  color: #FFFFFF;
+  color: #0F172A;
   margin: 0;
 }
 
-.launcher-sub-greeting {
+.launcher-sub-greeting-light {
   font-size: 0.88rem;
-  color: #94A3B8;
+  color: #64748B;
   margin-top: 4px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.zono-launcher-status-strip {
-  margin-top: 24px;
+.zono-launcher-status-strip-light {
+  margin-top: 26px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  font-size: 0.82rem;
-  color: #CBD5E1;
+  font-size: 0.85rem;
+  color: #475569;
   font-weight: 600;
 }
 
@@ -881,80 +881,87 @@ aside.sidebar,
   50% { transform: scale(1.3); opacity: 0.6; }
 }
 
-.zono-circular-hubs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 12px;
+/* Pure Circles Grid - Free-standing circles, NO rectangular card borders */
+.zono-pure-circles-grid {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  align-items: flex-start;
+  gap: 28px 32px;
+  padding: 16px 8px;
 }
 
-.zono-circle-hub-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: 12px 8px;
+.zono-pure-circle-item {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-normal);
-  color: #FFFFFF;
+  text-align: center;
   text-decoration: none;
   font-family: inherit;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+  min-width: 90px;
 }
 
-.zono-circle-hub-btn:hover {
-  transform: translateY(-3px);
-  background: rgba(255, 255, 255, 0.09);
-  border-color: var(--border-orange);
+.zono-pure-circle-item:hover {
+  transform: translateY(-6px);
 }
 
-.zono-circle-hub-btn.is-active {
-  background: rgba(255, 102, 0, 0.18);
-  border-color: var(--primary-orange);
-  box-shadow: 0 0 18px rgba(255, 102, 0, 0.35);
-}
-
-.circle-bubble-outer {
+.zono-free-circle {
   position: relative;
-  width: 58px;
-  height: 58px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  transition: transform var(--transition-fast);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
 }
 
-.zono-circle-hub-btn:hover .circle-bubble-outer {
-  transform: scale(1.08);
+.zono-pure-circle-item:hover .zono-free-circle {
+  transform: scale(1.1);
+}
+
+.zono-circle-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #1E293B;
+  text-align: center;
+  margin-top: 4px;
+  max-width: 110px;
+  line-height: 1.3;
 }
 
 .circle-bubble-inner {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .circle-bubble-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -2px;
+  right: -2px;
   background: var(--primary-orange);
   color: #FFFFFF;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
-  border: 1px solid #1E293B;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .hub-orange .circle-bubble-inner {

@@ -154,6 +154,11 @@ router.post('/employees', authenticateToken, requireRoles(['SUPER_ADMIN', 'BRANC
       transportAllowance,
       otherAllowances,
       shiftHours,
+      biometricMethod,
+      allowedLocationLat,
+      allowedLocationLng,
+      allowedRadiusMeters,
+      faceTemplateData,
       notes,
     } = req.body;
 
@@ -171,8 +176,9 @@ router.post('/employees', authenticateToken, requireRoles(['SUPER_ADMIN', 'BRANC
         employee_code, name, national_id, phone, email,
         department_id, job_title, hire_date, basic_salary,
         housing_allowance, transport_allowance, other_allowances,
-        shift_hours, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        shift_hours, biometric_method, allowed_location_lat,
+        allowed_location_lng, allowed_radius_meters, face_template_data, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
       RETURNING *`,
       [
         employeeCode,
@@ -188,13 +194,18 @@ router.post('/employees', authenticateToken, requireRoles(['SUPER_ADMIN', 'BRANC
         Number.parseFloat(transportAllowance || '0'),
         Number.parseFloat(otherAllowances || '0'),
         Number.parseInt(shiftHours || '8', 10),
+        biometricMethod || 'TIME_ENTRY',
+        allowedLocationLat ? Number.parseFloat(allowedLocationLat) : null,
+        allowedLocationLng ? Number.parseFloat(allowedLocationLng) : null,
+        allowedRadiusMeters ? Number.parseInt(allowedRadiusMeters, 10) : 150,
+        faceTemplateData || null,
         notes || '',
       ]
     );
 
     return res.status(201).json({
       success: true,
-      message: `تم تكويد الموظف ${name} بنجاح برقم (${employeeCode})`,
+      message: `تم تكويد الموظف ${name} بنجاح برقم (${employeeCode}) مع ضبط طريقة البصمة (${biometricMethod || 'إدخال الوقت'})`,
       data: insertRes.rows[0],
     });
   } catch (error: any) {
@@ -218,6 +229,11 @@ router.put('/employees/:id', authenticateToken, requireRoles(['SUPER_ADMIN', 'BR
       transportAllowance,
       otherAllowances,
       shiftHours,
+      biometricMethod,
+      allowedLocationLat,
+      allowedLocationLng,
+      allowedRadiusMeters,
+      faceTemplateData,
       isActive,
       notes,
     } = req.body;
@@ -236,10 +252,15 @@ router.put('/employees/:id', authenticateToken, requireRoles(['SUPER_ADMIN', 'BR
         transport_allowance = COALESCE($10, transport_allowance),
         other_allowances = COALESCE($11, other_allowances),
         shift_hours = COALESCE($12, shift_hours),
-        is_active = COALESCE($13, is_active),
-        notes = COALESCE($14, notes),
+        biometric_method = COALESCE($13, biometric_method),
+        allowed_location_lat = COALESCE($14, allowed_location_lat),
+        allowed_location_lng = COALESCE($15, allowed_location_lng),
+        allowed_radius_meters = COALESCE($16, allowed_radius_meters),
+        face_template_data = COALESCE($17, face_template_data),
+        is_active = COALESCE($18, is_active),
+        notes = COALESCE($19, notes),
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $15
+      WHERE id = $20
       RETURNING *`,
       [
         name,
@@ -254,6 +275,11 @@ router.put('/employees/:id', authenticateToken, requireRoles(['SUPER_ADMIN', 'BR
         transportAllowance != null ? Number.parseFloat(transportAllowance) : null,
         otherAllowances != null ? Number.parseFloat(otherAllowances) : null,
         shiftHours != null ? Number.parseInt(shiftHours, 10) : null,
+        biometricMethod,
+        allowedLocationLat != null ? Number.parseFloat(allowedLocationLat) : null,
+        allowedLocationLng != null ? Number.parseFloat(allowedLocationLng) : null,
+        allowedRadiusMeters != null ? Number.parseInt(allowedRadiusMeters, 10) : null,
+        faceTemplateData,
         isActive,
         notes,
         id,
@@ -751,6 +777,539 @@ router.post('/payroll/runs/:id/approve', authenticateToken, requireRoles(['SUPER
       success: true,
       message: `تم اعتماد مسير رواتب ${result.cycle_name} وإغلاق المستحقات بنجاح!`,
       data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==============================================================================
+// 7. البصمة وحركات الحضور البيومترية (Biometric Punches & Face/GPS Attendance)
+// ==============================================================================
+router.get('/punches', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { employeeId, date, method, limit = 100 } = req.query;
+    let sql = `
+      SELECT p.*, e.name as employee_name, e.employee_code, e.job_title, d.name as department_name
+      FROM hr_biometric_punches p
+      JOIN hr_employees e ON e.id = p.employee_id
+      LEFT JOIN hr_departments d ON d.id = e.department_id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (employeeId) {
+      params.push(employeeId);
+      sql += ` AND p.employee_id = $${params.length}`;
+    }
+
+    if (date) {
+      params.push(`${date}%`);
+      sql += ` AND p.punch_time::text LIKE $${params.length}`;
+    }
+
+    if (method) {
+      params.push(method);
+      sql += ` AND p.punch_method = $${params.length}`;
+    }
+
+    sql += ` ORDER BY p.punch_time DESC LIMIT $${params.length + 1}`;
+    params.push(limit);
+
+    const result = await query(sql, params);
+    return res.json({ success: true, data: result.rows });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/punches', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const {
+      employeeId,
+      punchType = 'IN',
+      punchMethod = 'TIME_ENTRY',
+      locationLat,
+      locationLng,
+      locationAddress,
+      faceImageUrl,
+      deviceId,
+      notes,
+    } = req.body;
+
+    if (!employeeId) {
+      return res.status(400).json({ success: false, message: 'معرف الموظف مطلوب' });
+    }
+
+    // Verify employee
+    const empRes = await query(`SELECT * FROM hr_employees WHERE id = $1`, [employeeId]);
+    if (empRes.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    }
+    const emp = empRes.rows[0];
+
+    // Distance calculation if employee has geofence
+    let distanceMeters = null;
+    let verificationStatus = 'VERIFIED';
+
+    if (emp.allowed_location_lat && emp.allowed_location_lng && locationLat && locationLng) {
+      const R = 6371e3; // Earth radius in meters
+      const φ1 = (emp.allowed_location_lat * Math.PI) / 180;
+      const φ2 = (locationLat * Math.PI) / 180;
+      const Δφ = ((locationLat - emp.allowed_location_lat) * Math.PI) / 180;
+      const Δλ = ((locationLng - emp.allowed_location_lng) * Math.PI) / 180;
+
+      const a =
+        Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      distanceMeters = Math.round(R * c);
+
+      const maxAllowed = emp.allowed_radius_meters || 150;
+      if (distanceMeters > maxAllowed) {
+        verificationStatus = 'OUT_OF_RANGE';
+      }
+    }
+
+    const punchRes = await query(
+      `INSERT INTO hr_biometric_punches (
+        employee_id, punch_type, punch_method, location_lat,
+        location_lng, location_address, distance_meters, face_image_url,
+        device_id, verification_status, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *`,
+      [
+        employeeId,
+        punchType,
+        punchMethod,
+        locationLat ? Number.parseFloat(locationLat) : null,
+        locationLng ? Number.parseFloat(locationLng) : null,
+        locationAddress || '',
+        distanceMeters,
+        faceImageUrl || null,
+        deviceId || null,
+        verificationStatus,
+        notes || '',
+      ]
+    );
+
+    // Automatically sync or update hr_attendance for today
+    const today = new Date().toISOString().split('T')[0];
+    const nowTime = new Date().toTimeString().slice(0, 5);
+
+    const existAtt = await query(
+      `SELECT * FROM hr_attendance WHERE employee_id = $1 AND attendance_date = $2`,
+      [employeeId, today]
+    );
+
+    if (existAtt.rowCount === 0) {
+      // First punch of the day: create attendance record
+      await query(
+        `INSERT INTO hr_attendance (
+          employee_id, attendance_date, status, check_in_time, notes
+        ) VALUES ($1, $2, 'PRESENT', $3, $4)`,
+        [employeeId, today, nowTime, `تم التسجيل عبر البصمة (${punchMethod})`]
+      );
+    } else if (punchType === 'OUT') {
+      // Out punch: update check out time
+      await query(
+        `UPDATE hr_attendance SET
+          check_out_time = $1,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE employee_id = $2 AND attendance_date = $3`,
+        [nowTime, employeeId, today]
+      );
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: `تم تسجيل بصمة ${punchType === 'IN' ? 'الدخول' : 'الانصراف'} للموظف (${emp.name}) بنجاح!`,
+      data: punchRes.rows[0],
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Import punches batch (from ZKTeco or Excel CSV device export)
+router.post('/punches/import', authenticateToken, requireRoles(['SUPER_ADMIN', 'BRANCH_MANAGER']), async (req: AuthRequest, res: Response) => {
+  try {
+    const { punches } = req.body;
+    if (!Array.isArray(punches) || punches.length === 0) {
+      return res.status(400).json({ success: false, message: 'قائمة البصمات فارغة أو غير صحيحة' });
+    }
+
+    let insertedCount = 0;
+    for (const p of punches) {
+      if (!p.employeeId && !p.employeeCode) continue;
+
+      let empId = p.employeeId;
+      if (!empId && p.employeeCode) {
+        const findEmp = await query(`SELECT id FROM hr_employees WHERE employee_code = $1`, [p.employeeCode]);
+        if (findEmp.rowCount && findEmp.rows[0]) {
+          empId = findEmp.rows[0].id;
+        } else {
+          continue;
+        }
+      }
+
+      await query(
+        `INSERT INTO hr_biometric_punches (
+          employee_id, punch_time, punch_type, punch_method, device_id, verification_status, notes
+        ) VALUES ($1, $2, $3, 'DEVICE_IMPORT', $4, 'VERIFIED', $5)`,
+        [
+          empId,
+          p.punchTime || new Date().toISOString(),
+          p.punchType || 'IN',
+          p.deviceId || 'DEVICE-01',
+          p.notes || 'استيراد من شيت جهاز البصمة',
+        ]
+      );
+      insertedCount++;
+    }
+
+    return res.json({
+      success: true,
+      message: `تم استيراد ${insertedCount} حركة بصمة بنجاح إلى قاعدة البيانات!`,
+      data: { importedCount: insertedCount },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Audit & Comparison: Punch records vs manual shifts
+router.get('/punches/audit-comparison', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { date = new Date().toISOString().split('T')[0] } = req.query;
+
+    const result = await query(
+      `SELECT 
+        e.id as employee_id,
+        e.employee_code,
+        e.name as employee_name,
+        e.job_title,
+        d.name as department_name,
+        e.biometric_method,
+        e.shift_hours,
+        att.id as attendance_id,
+        att.status as shift_status,
+        att.check_in_time as scheduled_in,
+        att.check_out_time as scheduled_out,
+        att.late_minutes,
+        att.overtime_hours,
+        (
+          SELECT MIN(to_char(p_in.punch_time, 'HH24:MI'))
+          FROM hr_biometric_punches p_in
+          WHERE p_in.employee_id = e.id 
+            AND p_in.punch_time::text LIKE $1
+            AND p_in.punch_type = 'IN'
+        ) as actual_biometric_in,
+        (
+          SELECT MAX(to_char(p_out.punch_time, 'HH24:MI'))
+          FROM hr_biometric_punches p_out
+          WHERE p_out.employee_id = e.id 
+            AND p_out.punch_time::text LIKE $1
+            AND p_out.punch_type = 'OUT'
+        ) as actual_biometric_out,
+        (
+          SELECT COUNT(*)
+          FROM hr_biometric_punches p_all
+          WHERE p_all.employee_id = e.id 
+            AND p_all.punch_time::text LIKE $1
+        ) as total_punches_count
+      FROM hr_employees e
+      LEFT JOIN hr_departments d ON d.id = e.department_id
+      LEFT JOIN hr_attendance att ON att.employee_id = e.id AND att.attendance_date = $2
+      WHERE e.is_active = true
+      ORDER BY e.name ASC`,
+      [`${date}%`, date]
+    );
+
+    return res.json({ success: true, data: result.rows });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==============================================================================
+// 8. دورة الإجازات والأذونات (Leaves & Permissions Workflow)
+// ==============================================================================
+router.get('/leaves', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { employeeId, status, year } = req.query;
+    let sql = `
+      SELECT l.*, e.name as employee_name, e.employee_code, d.name as department_name
+      FROM hr_leaves l
+      JOIN hr_employees e ON e.id = l.employee_id
+      LEFT JOIN hr_departments d ON d.id = e.department_id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (employeeId) {
+      params.push(employeeId);
+      sql += ` AND l.employee_id = $${params.length}`;
+    }
+
+    if (status) {
+      params.push(status);
+      sql += ` AND l.status = $${params.length}`;
+    }
+
+    if (year) {
+      params.push(`${year}%`);
+      sql += ` AND l.start_date::text LIKE $${params.length}`;
+    }
+
+    sql += ` ORDER BY l.id DESC`;
+
+    const result = await query(sql, params);
+    return res.json({ success: true, data: result.rows });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/leaves', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { employeeId, leaveType, startDate, endDate, hours, reason } = req.body;
+    if (!employeeId || !leaveType || !startDate || !endDate) {
+      return res.status(400).json({ success: false, message: 'الموظف، نوع الإجازة، وتاريخ البداية والنهاية حقول إلزامية' });
+    }
+
+    const insertRes = await query(
+      `INSERT INTO hr_leaves (
+        employee_id, leave_type, start_date, end_date, hours, reason, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, 'PENDING')
+      RETURNING *`,
+      [
+        employeeId,
+        leaveType,
+        startDate,
+        endDate,
+        Number.parseFloat(hours || '0'),
+        reason || '',
+      ]
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'تم تسجيل طلب الإجازة بنجاح وهو قيد الاعتماد الإداري',
+      data: insertRes.rows[0],
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.put('/leaves/:id/status', authenticateToken, requireRoles(['SUPER_ADMIN', 'BRANCH_MANAGER']), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status, decisionNotes } = req.body;
+
+    if (!['APPROVED', 'REJECTED'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'حالة الاعتماد يجب أن تكون إما APPROVED أو REJECTED' });
+    }
+
+    const updateRes = await query(
+      `UPDATE hr_leaves SET
+        status = $1,
+        decision_notes = $2,
+        approved_by = $3,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4
+      RETURNING *`,
+      [status, decisionNotes || '', req.user?.fullName || 'الإدارة', id]
+    );
+
+    if (updateRes.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'طلب الإجازة غير موجود' });
+    }
+
+    return res.json({
+      success: true,
+      message: `تم ${status === 'APPROVED' ? 'اعتماد' : 'رفض'} طلب الإجازة بنجاح`,
+      data: updateRes.rows[0],
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==============================================================================
+// 9. تقارير الموارد البشرية الشاملة (Comprehensive HR Reports)
+// ==============================================================================
+// تقرير عام لموظف 360 درجة (كشف حساب رواتب، سلف، حضور، وإجازات)
+router.get('/reports/employee/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const empRes = await query(
+      `SELECT e.*, d.name as department_name 
+       FROM hr_employees e 
+       LEFT JOIN hr_departments d ON d.id = e.department_id 
+       WHERE e.id = $1`,
+      [id]
+    );
+
+    if (empRes.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    }
+    const emp = empRes.rows[0];
+
+    // Payroll payout history
+    const payrollHistory = await query(
+      `SELECT pi.*, pr.cycle_code, pr.cycle_name, pr.month, pr.status as run_status
+       FROM hr_payroll_items pi
+       JOIN hr_payroll_runs pr ON pr.id = pi.payroll_run_id
+       WHERE pi.employee_id = $1
+       ORDER BY pr.month DESC`,
+      [id]
+    );
+
+    // Adjustments & Advances history
+    const adjustmentsHistory = await query(
+      `SELECT * FROM hr_salary_adjustments 
+       WHERE employee_id = $1 
+       ORDER BY action_date DESC`,
+      [id]
+    );
+
+    // Leaves summary
+    const leavesHistory = await query(
+      `SELECT * FROM hr_leaves 
+       WHERE employee_id = $1 
+       ORDER BY start_date DESC`,
+      [id]
+    );
+
+    // Biometric & Attendance summary metrics
+    const attMetrics = await query(
+      `SELECT 
+        COUNT(CASE WHEN status = 'PRESENT' THEN 1 END) as total_present,
+        COUNT(CASE WHEN status = 'ABSENT' THEN 1 END) as total_absent,
+        COUNT(CASE WHEN status = 'LATE' THEN 1 END) as total_late,
+        COALESCE(SUM(late_minutes), 0) as total_late_minutes,
+        COALESCE(SUM(overtime_hours), 0) as total_overtime_hours
+       FROM hr_attendance
+       WHERE employee_id = $1`,
+      [id]
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        employee: emp,
+        metrics: attMetrics.rows[0],
+        payrollHistory: payrollHistory.rows,
+        adjustmentsHistory: adjustmentsHistory.rows,
+        leavesHistory: leavesHistory.rows,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// تقرير إجمالي الأقسام وتكاليف الرواتب (Totals & Dept Cost Report)
+router.get('/reports/totals', authenticateToken, async (_req: AuthRequest, res: Response) => {
+  try {
+    const result = await query(`
+      SELECT 
+        d.id as department_id,
+        d.name as department_name,
+        d.code as department_code,
+        COUNT(e.id) as employee_count,
+        COALESCE(SUM(e.basic_salary), 0) as total_basic_salaries,
+        COALESCE(SUM(e.housing_allowance + e.transport_allowance + e.other_allowances), 0) as total_allowances,
+        COALESCE(SUM(e.basic_salary + e.housing_allowance + e.transport_allowance + e.other_allowances), 0) as gross_monthly_cost,
+        COALESCE((
+          SELECT SUM(adj.amount) 
+          FROM hr_salary_adjustments adj 
+          JOIN hr_employees emp ON emp.id = adj.employee_id 
+          WHERE emp.department_id = d.id AND adj.type = 'ADVANCE' AND adj.is_settled = false
+        ), 0) as open_advances_balance
+      FROM hr_departments d
+      LEFT JOIN hr_employees e ON e.department_id = d.id AND e.is_active = true
+      GROUP BY d.id
+      ORDER BY gross_monthly_cost DESC
+    `);
+
+    // Calculate grand total for percentages
+    const totalCompanyCost = result.rows.reduce(
+      (sum, row) => sum + Number.parseFloat(row.gross_monthly_cost || '0'),
+      0
+    );
+
+    const dataWithPercentages = result.rows.map((row) => ({
+      ...row,
+      costPercentage: totalCompanyCost > 0
+        ? ((Number.parseFloat(row.gross_monthly_cost) / totalCompanyCost) * 100).toFixed(1)
+        : '0.0',
+    }));
+
+    return res.json({
+      success: true,
+      data: {
+        totalCompanyCost,
+        departments: dataWithPercentages,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==============================================================================
+// 10. صلاحيات مستخدمي شاشات الموارد البشرية (HR Screen Permissions)
+// ==============================================================================
+router.get('/permissions', authenticateToken, requireRoles(['SUPER_ADMIN']), async (_req: AuthRequest, res: Response) => {
+  try {
+    const usersRes = await query(`
+      SELECT id, username, full_name, role, is_active 
+      FROM users 
+      WHERE role IN ('SUPER_ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'DATA_ENTRY')
+      ORDER BY id ASC
+    `);
+
+    const permsRes = await query(`SELECT * FROM hr_user_permissions`);
+
+    return res.json({
+      success: true,
+      data: {
+        users: usersRes.rows,
+        permissions: permsRes.rows,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/permissions', authenticateToken, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId, screenKey, canView, canEdit } = req.body;
+    if (!userId || !screenKey) {
+      return res.status(400).json({ success: false, message: 'معرف المستخدم والشاشة مطلوبان' });
+    }
+
+    const result = await query(
+      `INSERT INTO hr_user_permissions (user_id, screen_key, can_view, can_edit, updated_at)
+       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id, screen_key)
+       DO UPDATE SET
+         can_view = EXCLUDED.can_view,
+         can_edit = EXCLUDED.can_edit,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [userId, screenKey, canView ?? true, canEdit ?? true]
+    );
+
+    return res.json({
+      success: true,
+      message: 'تم تحديث صلاحية الشاشة بنجاح',
+      data: result.rows[0],
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

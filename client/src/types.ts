@@ -239,6 +239,11 @@ export interface HREmployee {
   transport_allowance: string | number;
   other_allowances: string | number;
   shift_hours: number;
+  biometric_method?: 'GPS_LOCATION' | 'FACE_RECOGNITION' | 'TIME_ENTRY' | 'GPS_AND_FACE';
+  allowed_location_lat?: number;
+  allowed_location_lng?: number;
+  allowed_radius_meters?: number;
+  face_template_data?: string;
   is_active: boolean;
   notes?: string;
 }
@@ -322,4 +327,69 @@ export interface HROverviewStats {
   lateToday: number;
   openAdvances: number;
 }
+
+export interface HRBiometricPunch {
+  id: number;
+  employee_id: number;
+  employee_name?: string;
+  employee_code?: string;
+  job_title?: string;
+  department_name?: string;
+  punch_time: string;
+  punch_type: 'IN' | 'OUT';
+  punch_method: 'GPS_LOCATION' | 'FACE_RECOGNITION' | 'TIME_ENTRY' | 'DEVICE_IMPORT';
+  location_lat?: number;
+  location_lng?: number;
+  location_address?: string;
+  distance_meters?: number;
+  face_image_url?: string;
+  device_id?: string;
+  verification_status: 'VERIFIED' | 'OUT_OF_RANGE' | 'MANUAL_OVERRIDE';
+  notes?: string;
+}
+
+export interface HRLeave {
+  id: number;
+  employee_id: number;
+  employee_name?: string;
+  employee_code?: string;
+  department_name?: string;
+  leave_type: 'ANNUAL' | 'CASUAL' | 'SICK' | 'UNPAID' | 'PERMISSION_HOURS';
+  start_date: string;
+  end_date: string;
+  hours: number;
+  reason: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  decision_notes?: string;
+  approved_by?: string;
+  created_at: string;
+}
+
+export interface HRAuditComparisonRow {
+  employee_id: number;
+  employee_code: string;
+  employee_name: string;
+  job_title: string;
+  department_name: string;
+  biometric_method: string;
+  shift_hours: number;
+  attendance_id?: number;
+  shift_status?: string;
+  scheduled_in?: string;
+  scheduled_out?: string;
+  late_minutes?: number;
+  overtime_hours?: number;
+  actual_biometric_in?: string;
+  actual_biometric_out?: string;
+  total_punches_count: string | number;
+}
+
+export interface HRUserPermission {
+  id?: number;
+  user_id: number;
+  screen_key: string;
+  can_view: boolean;
+  can_edit: boolean;
+}
+
 
