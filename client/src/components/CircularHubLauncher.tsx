@@ -133,7 +133,7 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
         </div>
       </div>
 
-      {/* Pure Circles Grid (No Boxes / No Rectangular Borders) */}
+      {/* Pure Circles Grid with Icon and Name INSIDE the circle */}
       <div className="zono-pure-circles-grid">
         {hubs.filter((h) => h.visible).map((hub) => {
           const isActive = currentTab === hub.id;
@@ -142,18 +142,16 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
               key={hub.id}
               type="button"
               onClick={() => onSelectTab(hub.id)}
-              className={`zono-pure-circle-item ${hub.colorClass} ${isActive ? 'is-active' : ''}`}
+              className={`zono-circle-tab-btn ${hub.colorClass} ${isActive ? 'is-active' : ''}`}
               title={hub.label}
             >
-              <div className="zono-free-circle">
-                <div className="circle-bubble-inner">
-                  {hub.icon}
-                </div>
+              <div className="zono-tab-circle">
+                <div className="tab-circle-icon">{hub.icon}</div>
+                <span className="tab-circle-title">{hub.label}</span>
                 {hub.badge && (
                   <span className="circle-bubble-badge">{hub.badge}</span>
                 )}
               </div>
-              <span className="zono-circle-title">{hub.label}</span>
             </button>
           );
         })}

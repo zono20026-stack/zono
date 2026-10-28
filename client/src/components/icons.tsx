@@ -244,6 +244,13 @@ export const ArrowRight: React.FC<IconProps> = (props) => (
   </svg>
 );
 
+export const ArrowLeft: React.FC<IconProps> = (props) => (
+  <svg {...defaultProps(props)} viewBox="0 0 24 24">
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
 export const ArrowDownLeft: React.FC<IconProps> = (props) => (
   <svg {...defaultProps(props)} viewBox="0 0 24 24">
     <line x1="17" y1="7" x2="7" y2="17" />

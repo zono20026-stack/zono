@@ -36,6 +36,8 @@ import {
   FileSpreadsheet,
   UserCheck,
   ShieldCheck,
+  ArrowRight,
+  ArrowLeft,
 } from './icons';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -44,6 +46,7 @@ interface HRViewProps {
 }
 
 type HRSubSection =
+  | 'portal'
   | 'employees'
   | 'punches'
   | 'attendance'
@@ -57,7 +60,7 @@ type HRSubSection =
 
 export const HRView: React.FC<HRViewProps> = ({ user }) => {
   const { language } = useLanguage();
-  const [activeSection, setActiveSection] = useState<HRSubSection>('employees');
+  const [activeSection, setActiveSection] = useState<HRSubSection>('portal');
   const [stats, setStats] = useState<HROverviewStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -700,17 +703,89 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
   // Sub-Navigation Hubs
   // ----------------------------------------------------
   const subHubs = [
-    { id: 'employees' as HRSubSection, title: 'دليل الموظفين', subtitle: 'تكويد وطريقة البصمة', icon: <Users size={22} />, color: '#FF6600' },
-    { id: 'punches' as HRSubSection, title: 'حركات البصمة الحية', subtitle: 'GPS وكاميرا الوجه والأجهزة', icon: <Fingerprint size={22} />, color: '#3B82F6' },
-    { id: 'attendance' as HRSubSection, title: 'الحضور والانصراف', subtitle: 'سجل الورديات اليومية', icon: <Calendar size={22} />, color: '#10B981' },
-    { id: 'audit' as HRSubSection, title: 'مطابقة وتدقيق البصمة', subtitle: 'مقارنة المواعيد والتأخير', icon: <Clock size={22} />, color: '#8B5CF6' },
-    { id: 'leaves' as HRSubSection, title: 'الإجازات والأذونات', subtitle: 'الأرصدة والاعتماد الإداري', icon: <Award size={22} />, color: '#EC4899' },
-    { id: 'adjustments' as HRSubSection, title: 'السلف والخصومات', subtitle: 'العهد والسلف والمكافآت', icon: <DollarSign size={22} />, color: '#F59E0B' },
-    { id: 'payroll' as HRSubSection, title: 'مسير الرواتب الشهري', subtitle: 'الاحتساب التلقائي والاعتماد', icon: <TrendingUp size={22} />, color: '#06B6D4' },
-    { id: 'payslips' as HRSubSection, title: 'سراكي الرواتب A4', subtitle: 'طباعة الإيصالات والكشوفات', icon: <Receipt size={22} />, color: '#F97316' },
-    { id: 'reports' as HRSubSection, title: 'التقارير الشاملة', subtitle: 'كشف حساب 360 وإجماليات', icon: <FileSpreadsheet size={22} />, color: '#14B8A6' },
-    { id: 'roles' as HRSubSection, title: 'صلاحيات مستخدمي HR', subtitle: 'الاطلاع والتعديل لكل قسم', icon: <ShieldCheck size={22} />, color: '#6366F1' },
+    {
+      id: 'employees' as HRSubSection,
+      title: language === 'ar' ? 'دليل وتكويد الموظفين' : 'Employees',
+      subtitle: language === 'ar' ? 'تكويد وطرق البصمة GPS/وجه' : 'Staff Master & Biometrics',
+      icon: <Users size={28} />,
+      colorClass: 'hub-orange',
+      badge: language === 'ar' ? 'تكويد' : 'Master',
+    },
+    {
+      id: 'punches' as HRSubSection,
+      title: language === 'ar' ? 'سجل البصمات' : 'Live Punches',
+      subtitle: language === 'ar' ? 'GPS وكاميرا الوجه والأجهزة' : 'Biometric GPS/Face Log',
+      icon: <Fingerprint size={28} />,
+      colorClass: 'hub-blue',
+      badge: language === 'ar' ? 'بصمة حية' : 'Live',
+    },
+    {
+      id: 'attendance' as HRSubSection,
+      title: language === 'ar' ? 'الحضور والغياب' : 'Attendance',
+      subtitle: language === 'ar' ? 'سجل الورديات وساعات العمل' : 'Daily Shift Register',
+      icon: <Calendar size={28} />,
+      colorClass: 'hub-green',
+      badge: language === 'ar' ? 'يومي' : 'Daily',
+    },
+    {
+      id: 'audit' as HRSubSection,
+      title: language === 'ar' ? 'مطابقة البصمة' : 'Punch Audit',
+      subtitle: language === 'ar' ? 'تدقيق التأخير ومواعيد الوردية' : 'Audit Comparison',
+      icon: <Clock size={28} />,
+      colorClass: 'hub-purple',
+      badge: language === 'ar' ? 'تدقيق' : 'Audit',
+    },
+    {
+      id: 'leaves' as HRSubSection,
+      title: language === 'ar' ? 'الإجازات والأذون' : 'Leaves',
+      subtitle: language === 'ar' ? 'الاعتماد الإداري والأرصدة' : 'Leave Workflow',
+      icon: <Award size={28} />,
+      colorClass: 'hub-pink',
+      badge: language === 'ar' ? 'طلبات' : 'Requests',
+    },
+    {
+      id: 'adjustments' as HRSubSection,
+      title: language === 'ar' ? 'السلف والخصومات' : 'Advances',
+      subtitle: language === 'ar' ? 'العهد والخصومات والمكافآت' : 'Advances & Loans',
+      icon: <DollarSign size={28} />,
+      colorClass: 'hub-amber',
+      badge: language === 'ar' ? 'مالي' : 'Finance',
+    },
+    {
+      id: 'payroll' as HRSubSection,
+      title: language === 'ar' ? 'مسير الرواتب' : 'Payroll Run',
+      subtitle: language === 'ar' ? 'الاحتساب الشهري والاعتماد' : 'Monthly Payroll Run',
+      icon: <TrendingUp size={28} />,
+      colorClass: 'hub-cyan',
+      badge: language === 'ar' ? 'شهري' : 'Monthly',
+    },
+    {
+      id: 'payslips' as HRSubSection,
+      title: language === 'ar' ? 'سراكي القبض' : 'A4 Payslips',
+      subtitle: language === 'ar' ? 'طباعة قسائم الرواتب A4' : 'Printable Payslips',
+      icon: <Receipt size={28} />,
+      colorClass: 'hub-rose',
+      badge: language === 'ar' ? 'A4 طباعة' : 'Print',
+    },
+    {
+      id: 'reports' as HRSubSection,
+      title: language === 'ar' ? 'تقارير شاملة' : '360 Reports',
+      subtitle: language === 'ar' ? 'كشف 360 وتحليلات الموظفين' : 'Comprehensive Analytics',
+      icon: <FileSpreadsheet size={28} />,
+      colorClass: 'hub-teal',
+      badge: language === 'ar' ? 'تحليلات' : 'Analytics',
+    },
+    {
+      id: 'roles' as HRSubSection,
+      title: language === 'ar' ? 'صلاحيات HR' : 'Permissions',
+      subtitle: language === 'ar' ? 'الاطلاع والتعديل لكل قسم' : 'Screen Permissions',
+      icon: <ShieldCheck size={28} />,
+      colorClass: 'hub-indigo',
+      badge: language === 'ar' ? 'أمان' : 'Security',
+    },
   ];
+
+  const currentSubHub = subHubs.find((s) => s.id === activeSection);
 
   return (
     <div className="hr-module-container" style={{ width: '100%' }}>
@@ -741,52 +816,262 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
         </div>
       )}
 
-      {/* Header Banner - Clean Light Modern Aesthetic */}
-      <div
-        className="card"
-        style={{
-          padding: '24px',
-          marginBottom: '22px',
-          background: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* ===================================================================== */}
+      {/* 1. PORTAL LANDING VIEW: PURE CIRCULAR TABS (When activeSection === 'portal') */}
+      {/* ===================================================================== */}
+      {activeSection === 'portal' ? (
+        <>
+          {/* Header Banner - Clean Light Modern Aesthetic */}
+          <div
+            className="card"
+            style={{
+              padding: '24px',
+              marginBottom: '22px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 102, 0, 0.1)',
+                    border: '2px solid var(--primary-orange)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--primary-orange)',
+                    boxShadow: '0 4px 12px rgba(255, 102, 0, 0.2)',
+                  }}
+                >
+                  <Briefcase size={30} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                    {language === 'ar' ? 'منظومة الموارد البشرية وشؤون الموظفين | ZONO HR' : 'ZONO Staff & HR Operations'}
+                  </h2>
+                  <p style={{ color: '#64748B', fontSize: '0.9rem', margin: '4px 0 0 0', fontWeight: 600 }}>
+                    {language === 'ar'
+                      ? 'بوابة تشغيل متكاملة | انقر على أي دائرة للدخول إلى شاشتها المتخصصة'
+                      : 'Integrated staff coding, biometric punches, geofence GPS, leaves, advances, and payroll'}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => {
+                    loadOverview();
+                    loadEmployees();
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <RefreshCw size={14} className={loading ? 'spin-icon' : ''} />
+                  <span>{language === 'ar' ? 'تحديث المؤشرات' : 'Refresh'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    resetEmpForm();
+                    setEditingEmp(null);
+                    setIsAddEmpModalOpen(true);
+                  }}
+                  className="btn btn-primary btn-sm"
+                  style={{ fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Plus size={16} />
+                  <span>{language === 'ar' ? 'تكويد موظف جديد' : 'New Employee'}</span>
+                </button>
+                <button
+                  onClick={() => setIsLogPunchModalOpen(true)}
+                  className="btn btn-sm"
+                  style={{
+                    background: '#3B82F6',
+                    color: '#fff',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '8px 14px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Fingerprint size={16} />
+                  <span>{language === 'ar' ? 'تسجيل بصمة فورية' : 'Log Punch'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick KPI Strip */}
             <div
               style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                background: 'rgba(255, 102, 0, 0.1)',
-                border: '2px solid var(--primary-orange)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--primary-orange)',
-                boxShadow: '0 4px 12px rgba(255, 102, 0, 0.2)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                gap: '14px',
+                marginTop: '20px',
+                paddingTop: '16px',
+                borderTop: '1px solid var(--border-subtle)',
               }}
             >
-              <Briefcase size={30} />
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>إجمالي الموظفين النشطين</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--primary-orange)' }}>
+                  {stats?.activeEmployees ?? 0} موظف
+                </div>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>حضور اليوم المعتمد</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#10B981' }}>
+                  {stats?.presentToday ?? 0} حاضر
+                </div>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>غياب وتأخيرات اليوم</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#EF4444' }}>
+                  {(stats?.absentToday ?? 0) + (stats?.lateToday ?? 0)} حالة
+                </div>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>إجمالي السلف المفتوحة</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#F59E0B' }}>
+                  {(stats?.openAdvances ?? 0).toLocaleString()} ج.م
+                </div>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>إجمالي الرواتب المقدر شهرياً</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#3B82F6' }}>
+                  {(stats?.totalMonthlyPayroll ?? 0).toLocaleString()} ج.م
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pure Circular Springboard Portal Card */}
+          <div
+            className="zono-circular-launcher-container white-theme-launcher"
+            style={{
+              background: '#FFFFFF',
+              padding: '28px 24px',
+              borderRadius: 'var(--radius-xl)',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+              marginBottom: '24px',
+            }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 102, 0, 0.1)', color: 'var(--primary-orange)', padding: '6px 16px', borderRadius: 'var(--radius-full)', fontWeight: 800, fontSize: '0.88rem', marginBottom: '10px' }}>
+                <Briefcase size={16} />
+                <span>{language === 'ar' ? 'أقسام موديول الموارد البشرية' : 'HR Operation Sections'}</span>
+              </div>
+              <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', margin: '4px 0 0 0' }}>
+                {language === 'ar' ? 'اختر القسم المطلوب بالنقر على دائرته للدخول إلى شاشته المتخصصة' : 'Tap any circle below to launch its dedicated screen'}
+              </h3>
+              <p style={{ color: '#64748B', fontSize: '0.9rem', margin: '6px 0 0 0', fontWeight: 600 }}>
+                {language === 'ar'
+                  ? 'كل دائرة تمثل قسماً إدارياً مستقلاً بكامل البيانات، التقارير والعمليات'
+                  : 'Each circle leads to a dedicated workspace with full operations and reports'}
+              </p>
+            </div>
+
+            {/* The 10 Pure Circular Buttons Grid */}
+            <div className="zono-pure-circles-grid" style={{ gap: '26px 30px', padding: '12px 8px' }}>
+              {subHubs.map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setActiveSection(sub.id)}
+                  className={`zono-circle-tab-btn ${sub.colorClass}`}
+                  title={`${sub.title} - ${sub.subtitle}`}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="zono-tab-circle">
+                    <div className="tab-circle-icon">{sub.icon}</div>
+                    <span className="tab-circle-title">{sub.title}</span>
+                    {sub.badge && <span className="circle-bubble-badge">{sub.badge}</span>}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Bottom Status Info */}
+            <div
+              style={{
+                borderTop: '1px solid var(--border-subtle)',
+                marginTop: '24px',
+                paddingTop: '16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '10px',
+                fontSize: '0.85rem',
+                color: '#64748B',
+                fontWeight: 600,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    width: '9px',
+                    height: '9px',
+                    borderRadius: '50%',
+                    background: '#10B981',
+                    display: 'inline-block',
+                    boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
+                  }}
+                />
+                <span>{language === 'ar' ? 'موديول شؤون الموظفين والبصمات متصل ومتزامن لحظياً مع قاعدة البيانات' : 'HR & Biometrics Module: Online & Live Synced'}</span>
+              </div>
+              <div>
+                {language === 'ar' ? '10 شاشات وأقسام إدارية متكاملة' : '10 Specialized HR Screens'}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* ===================================================================== */
+        /* 2. DEDICATED SUB-VIEW HEADER (When activeSection !== 'portal')         */
+        /* ===================================================================== */
+        <div className="portal-subview-nav-header">
+          <div className="subview-title-wrap">
+            <div className={`subview-title-icon-badge ${currentSubHub?.colorClass || 'hub-orange'}`}>
+              {currentSubHub?.icon}
             </div>
             <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                {language === 'ar' ? 'منظومة الموارد البشرية وشؤون الموظفين | ZONO HR' : 'ZONO Staff & HR Operations'}
-              </h2>
-              <p style={{ color: '#64748B', fontSize: '0.9rem', margin: '4px 0 0 0', fontWeight: 600 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h2 className="subview-title-text">{currentSubHub?.title}</h2>
+                <span className="badge badge-orange" style={{ fontSize: '0.78rem', fontWeight: 800 }}>
+                  {currentSubHub?.badge}
+                </span>
+              </div>
+              <p className="subview-title-sub">
                 {language === 'ar'
-                  ? 'إدارة وتكويد الموظفين، البصمة الحية (GPS / صورة الوجه / الأجهزة)، الإجازات، السلف، ومسيرات الرواتب'
-                  : 'Integrated staff coding, biometric punches, geofence GPS, leaves, advances, and payroll'}
+                  ? `منظومة ZONO ◄ الموارد البشرية ◄ ${currentSubHub?.title} (${currentSubHub?.subtitle})`
+                  : `ZONO ERP ◄ Human Resources ◄ ${currentSubHub?.title}`}
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setActiveSection('portal')}
+              className="subview-back-btn"
+              title={language === 'ar' ? 'العودة لدوائر الموارد البشرية' : 'Back to HR Circles'}
+            >
+              <ArrowRight size={18} />
+              <span>{language === 'ar' ? 'العودة لدواير الموارد البشرية' : 'Back to HR Circles'}</span>
+            </button>
+
             <button
               onClick={() => {
-                loadOverview();
                 if (activeSection === 'employees') loadEmployees();
                 if (activeSection === 'punches') loadPunches();
                 if (activeSection === 'audit') loadAuditComparison();
@@ -794,6 +1079,11 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
                 if (activeSection === 'leaves') loadLeaves();
                 if (activeSection === 'adjustments') loadAdjustments();
                 if (activeSection === 'payroll') loadPayrollPreview();
+                if (activeSection === 'reports') {
+                  loadTotalsReport();
+                  if (selectedReportEmpId) loadEmployee360Report(selectedReportEmpId);
+                }
+                if (activeSection === 'roles') loadHRUsersAndPermissions();
               }}
               className="btn btn-secondary btn-sm"
               style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
@@ -801,143 +1091,9 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
               <RefreshCw size={14} className={loading ? 'spin-icon' : ''} />
               <span>{language === 'ar' ? 'تحديث البيانات' : 'Refresh'}</span>
             </button>
-            <button
-              onClick={() => {
-                resetEmpForm();
-                setEditingEmp(null);
-                setIsAddEmpModalOpen(true);
-              }}
-              className="btn btn-primary btn-sm"
-              style={{ fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Plus size={16} />
-              <span>{language === 'ar' ? 'تكويد موظف جديد' : 'New Employee'}</span>
-            </button>
-            <button
-              onClick={() => setIsLogPunchModalOpen(true)}
-              className="btn btn-sm"
-              style={{
-                background: '#3B82F6',
-                color: '#fff',
-                fontWeight: 800,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                padding: '8px 14px',
-                cursor: 'pointer',
-              }}
-            >
-              <Fingerprint size={16} />
-              <span>{language === 'ar' ? 'تسجيل بصمة فورية' : 'Log Punch'}</span>
-            </button>
           </div>
         </div>
-
-        {/* Quick KPI Strip */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-            gap: '14px',
-            marginTop: '20px',
-            paddingTop: '16px',
-            borderTop: '1px solid var(--border-subtle)',
-          }}
-        >
-          <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>إجمالي الموظفين النشطين</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--primary-orange)' }}>
-              {stats?.activeEmployees ?? 0} موظف
-            </div>
-          </div>
-          <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>حضور اليوم المعتمد</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#10B981' }}>
-              {stats?.presentToday ?? 0} حاضر
-            </div>
-          </div>
-          <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>غياب وتأخيرات اليوم</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#EF4444' }}>
-              {(stats?.absentToday ?? 0) + (stats?.lateToday ?? 0)} حالة
-            </div>
-          </div>
-          <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>إجمالي السلف المفتوحة</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#F59E0B' }}>
-              {(stats?.openAdvances ?? 0).toLocaleString()} ج.م
-            </div>
-          </div>
-          <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>إجمالي الرواتب المقدر شهرياً</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#3B82F6' }}>
-              {(stats?.totalMonthlyPayroll ?? 0).toLocaleString()} ج.م
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Internal Circular Sub-Hubs Selector */}
-      <div style={{ marginBottom: '22px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary-orange)' }} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#475569' }}>
-            أقسام موديول الموارد البشرية (اختر قسماً لعرض تفاصيله بالكامل):
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px 18px', alignItems: 'flex-start' }}>
-          {subHubs.map((sub) => {
-            const isActive = activeSection === sub.id;
-            return (
-              <button
-                key={sub.id}
-                type="button"
-                onClick={() => setActiveSection(sub.id)}
-                style={{
-                  background: isActive ? '#FFFFFF' : '#F8FAFC',
-                  border: isActive ? `2px solid ${sub.color}` : '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '10px 14px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  boxShadow: isActive ? `0 6px 18px rgba(0, 0, 0, 0.08)` : 'var(--shadow-sm)',
-                  transition: 'all var(--transition-fast)',
-                  outline: 'none',
-                }}
-              >
-                <div
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '50%',
-                    background: `${sub.color}15`,
-                    color: sub.color,
-                    border: `1.5px solid ${sub.color}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {sub.icon}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: isActive ? sub.color : '#1E293B' }}>
-                    {sub.title}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 500 }}>
-                    {sub.subtitle}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      )}
 
       {/* ===================================================================== */}
       {/* SECTION 1: EMPLOYEES DIRECTORY */}
