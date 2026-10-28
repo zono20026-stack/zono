@@ -31,10 +31,23 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
 app.use(compression());
-app.use(cors({
-  origin: '*', // Configured for dev & PWA
-  credentials: true,
-}));
+// CORS Configuration - Multi-origin protection
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://easy-send-erp.com'];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile app, native HTTP clients) or explicitly allowed origins
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      return callback(new Error('CORS Not Allowed for this Origin'), false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -45,6 +58,18 @@ const authLimiter = rateLimit({
   message: {
     success: false,
     message: 'تم تجاوز الحد الأقصى لمحاولات الدخول، يرجى الانتظار 15 دقيقة',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate Limiting on Public Tracking endpoint to prevent automated enumeration & scraping
+const trackingLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // max 60 tracking queries per minute per IP
+  message: {
+    success: false,
+    message: 'تم تجاوز معدل تتبع الشحنات المسموح به، يرجى الانتظار دقيقة واحدة',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -81,7 +106,7 @@ app.get('/health', async (_req: Request, res: Response) => {
 // Mount Versioned API Routes (/api/v1)
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/shipments', shipmentRoutes);
-app.use('/api/v1/tracking', trackingRoutes); // Public endpoint
+app.use('/api/v1/tracking', trackingLimiter, trackingRoutes); // Public endpoint with rate-limiting
 app.use('/api/v1/finance', financeRoutes);
 app.use('/api/v1/master', masterRoutes);
 app.use('/api/v1/hr', hrRoutes);

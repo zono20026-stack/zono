@@ -33,6 +33,9 @@ export const authenticateToken = async (
 
   try {
     const secret = process.env.JWT_SECRET || 'easy_send_super_secret_jwt_key_2026';
+    if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+      console.warn('[SECURITY WARNING] Production environment running with default JWT_SECRET. Set JWT_SECRET in .env immediately!');
+    }
     const decoded = jwt.verify(token, secret) as any;
 
     // Verify user is active in DB and fetch entity IDs

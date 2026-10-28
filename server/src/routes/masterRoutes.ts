@@ -406,10 +406,20 @@ router.post(
   }
 );
 
-// تحديث لايف لوكيشن المندوب (Live GPS Broadcast)
+// تحديث لايف لوكيشن المندوب (Live GPS Broadcast) - محمي ضد انتحال الشخصية (Anti-IDOR)
 router.post('/couriers/:id/location', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
   const courierId = parseInt(req.params.id, 10);
   const { latitude, longitude } = req.body;
+
+  // فحص الصلاحية والملكية: المندوب لا يحدث إلا موقعه، والإدارة مسموح لها
+  if (user.role === 'COURIER' && user.courierId !== courierId) {
+    return res.status(403).json({ success: false, message: 'غير مصرح بتحديث موقع مندوب آخر' });
+  }
+
+  if (user.role !== 'COURIER' && !['SUPER_ADMIN', 'BRANCH_MANAGER'].includes(user.role)) {
+    return res.status(403).json({ success: false, message: 'ليس لديك صلاحية تحديث إحداثيات المناديب' });
+  }
 
   if (!latitude || !longitude) {
     return res.status(400).json({ success: false, message: 'يرجى إرسال الإحداثيات' });
@@ -429,9 +439,20 @@ router.post('/couriers/:id/location', authenticateToken, async (req: AuthRequest
   }
 });
 
-// كشف حساب المندوب المفصل (Statement & Liability Breakdown)
+// كشف حساب المندوب المفصل (Statement & Liability Breakdown) - عزل صلاحيات محكم (Anti-IDOR)
 router.get('/couriers/:id/statement', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
   const courierId = parseInt(req.params.id, 10);
+
+  // منع المندوب من استعراض كشف حساب مندوب آخر
+  if (user.role === 'COURIER' && user.courierId !== courierId) {
+    return res.status(403).json({ success: false, message: 'غير مصرح باستعراض كشف حساب مندوب آخر' });
+  }
+
+  // منع أدوار غير معنية (مثل التاجر أو مدخل البيانات) من استعراض الكشف
+  if (!['SUPER_ADMIN', 'ACCOUNTANT', 'BRANCH_MANAGER', 'COURIER'].includes(user.role)) {
+    return res.status(403).json({ success: false, message: 'غير مصرح باستعراض كشف الحساب المالي للمندوب' });
+  }
 
   try {
     const courierRes = await query(
@@ -444,6 +465,11 @@ router.get('/couriers/:id/statement', authenticateToken, async (req: AuthRequest
     );
 
     if (courierRes.rowCount === 0) return res.status(404).json({ success: false, message: 'المندوب غير موجود' });
+
+    // عزل الفروع: مدير الفرع يرى مناديب فرعه فقط
+    if (user.role === 'BRANCH_MANAGER' && user.branchId && courierRes.rows[0].branch_id !== user.branchId) {
+      return res.status(403).json({ success: false, message: 'غير مصرح باستعراض كشف حساب مندوب في فرع آخر' });
+    }
 
     // Financial lines
     const linesRes = await query(

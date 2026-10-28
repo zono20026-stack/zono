@@ -87,6 +87,14 @@ router.get(
   requireRoles(['SUPER_ADMIN', 'ACCOUNTANT', 'BRANCH_MANAGER']),
   async (req: AuthRequest, res: Response) => {
     try {
+      const user = req.user!;
+      let branchFilter = '';
+      const params: any[] = [];
+      if (user.role === 'BRANCH_MANAGER' && user.branchId) {
+        branchFilter = 'WHERE c.branch_id = $1';
+        params.push(user.branchId);
+      }
+
       const resLiabilities = await query(
         `SELECT 
           c.id as courier_id, u.full_name as courier_name, u.phone,
@@ -101,7 +109,9 @@ router.get(
            SELECT id FROM chart_of_accounts WHERE account_code = '1020'
          )
          LEFT JOIN shipments s ON s.assigned_courier_id = c.id
-         GROUP BY c.id, u.full_name, u.phone, b.name, c.max_unsettled_days`
+         ${branchFilter}
+         GROUP BY c.id, u.full_name, u.phone, b.name, c.max_unsettled_days`,
+        params
       );
 
       const items = resLiabilities.rows.map((row) => {

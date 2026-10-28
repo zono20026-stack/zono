@@ -26,13 +26,17 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   const params: any[] = [];
   let paramIdx = 1;
 
-  // فحص الملكية التلقائي حسب الدور
+  // فحص الملكية التلقائي وعزل البيانات حسب الدور (Tenant & Role Scoping)
   if (user.role === 'COURIER') {
     conditions.push(`s.assigned_courier_id = $${paramIdx++}`);
     params.push(user.courierId);
   } else if (user.role === 'MERCHANT') {
     conditions.push(`s.merchant_id = $${paramIdx++}`);
     params.push(user.merchantId);
+  } else if (user.role === 'BRANCH_MANAGER' && user.branchId) {
+    conditions.push(`(s.origin_branch_id = $${paramIdx} OR s.destination_branch_id = $${paramIdx})`);
+    params.push(user.branchId);
+    paramIdx++;
   } else if (courierId) {
     conditions.push(`s.assigned_courier_id = $${paramIdx++}`);
     params.push(courierId);
@@ -149,12 +153,22 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
 
     const shipment = resDetail.rows[0];
 
-    // Ownership check
+    // Ownership check & multi-tenant branch isolation
     if (user.role === 'COURIER' && shipment.assigned_courier_id !== user.courierId) {
       return res.status(403).json({ success: false, message: 'غير مصرح بمشاهدة هذه الشحنة' });
     }
     if (user.role === 'MERCHANT' && shipment.merchant_id !== user.merchantId) {
       return res.status(403).json({ success: false, message: 'غير مصرح بمشاهدة هذه الشحنة' });
+    }
+    if (user.role === 'BRANCH_MANAGER' && user.branchId) {
+      if (shipment.origin_branch_id !== user.branchId && shipment.destination_branch_id !== user.branchId) {
+        return res.status(403).json({ success: false, message: 'غير مصرح بمشاهدة شحنة خارج نطاق فرعك' });
+      }
+    }
+
+    // Mask sensitive proof-of-delivery OTP from couriers to enforce real customer verification
+    if (user.role === 'COURIER') {
+      delete shipment.otp_code;
     }
 
     // Get History Log
@@ -325,17 +339,37 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// 4. تعيين مندوب للشحنة (مع فحص حظر العهدة المتأخرة X Days)
+// 4. تعيين مندوب للشحنة (مع فحص الصلاحية وحظر العهدة المتأخرة X Days)
 router.post('/:id/assign', authenticateToken, async (req: AuthRequest, res: Response) => {
   const user = req.user!;
   const shipmentId = parseInt(req.params.id, 10);
   const { courierId } = req.body;
+
+  // التحقق من الصلاحيات: مدير الفرع أو المشرف أو الإدارة العليا فقط
+  if (!['SUPER_ADMIN', 'BRANCH_MANAGER', 'DATA_ENTRY', 'ACCOUNTANT'].includes(user.role)) {
+    return res.status(403).json({ success: false, message: 'ليس لديك الصلاحية لتعيين المناديب للشحنات' });
+  }
 
   if (!courierId) {
     return res.status(400).json({ success: false, message: 'يرجى اختيار المندوب' });
   }
 
   try {
+    // التحقق من نطاق الفرع لمدير الفرع
+    if (user.role === 'BRANCH_MANAGER' && user.branchId) {
+      const shipScopeRes = await query(
+        `SELECT origin_branch_id, destination_branch_id FROM shipments WHERE id = $1`,
+        [shipmentId]
+      );
+      if (shipScopeRes.rowCount === 0) {
+        return res.status(404).json({ success: false, message: 'الشحنة غير موجودة' });
+      }
+      const sRow = shipScopeRes.rows[0];
+      if (sRow.origin_branch_id !== user.branchId && sRow.destination_branch_id !== user.branchId) {
+        return res.status(403).json({ success: false, message: 'غير مصرح بتعيين مندوب لشحنة تابعة لفرع آخر' });
+      }
+    }
+
     // 1. Fetch courier details and rules
     const courierRes = await query(
       `SELECT c.id, c.max_unsettled_days, c.is_suspended_from_assignment, u.full_name
@@ -403,7 +437,7 @@ router.post('/:id/assign', authenticateToken, async (req: AuthRequest, res: Resp
   }
 });
 
-// 5. تغيير حالة الشحنة (مع فحص الماكينة والإثبات)
+// 5. تغيير حالة الشحنة (محمي ضد ثغرات IDOR والتلاعب بالمسار)
 router.post('/:id/status', authenticateToken, async (req: AuthRequest, res: Response) => {
   const user = req.user!;
   const shipmentId = parseInt(req.params.id, 10);
@@ -421,6 +455,46 @@ router.post('/:id/status', authenticateToken, async (req: AuthRequest, res: Resp
   } = req.body;
 
   try {
+    // فحص الصلاحية والملكية قبل تغيير الحالة (Anti-IDOR)
+    const shipAuthRes = await query(
+      `SELECT id, status, assigned_courier_id, merchant_id, origin_branch_id, destination_branch_id
+       FROM shipments WHERE id = $1`,
+      [shipmentId]
+    );
+
+    if (shipAuthRes.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'الشحنة غير موجودة' });
+    }
+
+    const ship = shipAuthRes.rows[0];
+
+    // المندوب لا يغير إلا حالة شحناته المسندة إليه حصراً
+    if (user.role === 'COURIER') {
+      if (ship.assigned_courier_id !== user.courierId) {
+        return res.status(403).json({ success: false, message: 'غير مصرح بتحديث حالة شحنة غير معينة لك' });
+      }
+      if (!['PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED_DELIVERY'].includes(toStatus)) {
+        return res.status(403).json({ success: false, message: 'ليس لديك صلاحية تحويل الشحنة إلى هذه الحالة' });
+      }
+    }
+
+    // مدير الفرع محكوم بنطاق فرعه
+    if (user.role === 'BRANCH_MANAGER' && user.branchId) {
+      if (ship.origin_branch_id !== user.branchId && ship.destination_branch_id !== user.branchId) {
+        return res.status(403).json({ success: false, message: 'غير مصرح بتحديث حالة شحنة تابعة لفرع آخر' });
+      }
+    }
+
+    // التاجر يمكنه فقط إلغاء شحنته إذا كانت لا تزال NEW
+    if (user.role === 'MERCHANT') {
+      if (ship.merchant_id !== user.merchantId) {
+        return res.status(403).json({ success: false, message: 'غير مصرح بالوصول إلى هذه الشحنة' });
+      }
+      if (toStatus !== 'CANCELLED' || ship.status !== 'NEW') {
+        return res.status(403).json({ success: false, message: 'يمكن للتاجر إلغاء الشحنات الجديدة فقط قبل استلامها' });
+      }
+    }
+
     const updated = await transitionShipmentStatus({
       shipmentId,
       toStatus: toStatus as ShipmentStatus,
