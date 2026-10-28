@@ -13,6 +13,7 @@ import shipmentRoutes from './routes/shipmentRoutes.js';
 import trackingRoutes from './routes/trackingRoutes.js';
 import financeRoutes from './routes/financeRoutes.js';
 import masterRoutes from './routes/masterRoutes.js';
+import hrRoutes from './routes/hrRoutes.js';
 import { query } from './config/db.js';
 import { initializeDatabase } from './config/initDb.js';
 
@@ -22,6 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 // Security & Optimization Middleware
@@ -82,6 +84,7 @@ app.use('/api/v1/shipments', shipmentRoutes);
 app.use('/api/v1/tracking', trackingRoutes); // Public endpoint
 app.use('/api/v1/finance', financeRoutes);
 app.use('/api/v1/master', masterRoutes);
+app.use('/api/v1/hr', hrRoutes);
 
 // Static client build serving (Unified deployment support on Render/Docker)
 const clientDist = path.resolve(__dirname, '../../client/dist');

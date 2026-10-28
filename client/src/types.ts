@@ -214,3 +214,112 @@ export interface CourierMaster {
   max_unsettled_days: number;
   is_suspended_from_assignment: boolean;
 }
+
+export interface HRDepartment {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  employee_count?: string | number;
+}
+
+export interface HREmployee {
+  id: number;
+  employee_code: string;
+  name: string;
+  national_id?: string;
+  phone: string;
+  email?: string;
+  department_id?: number;
+  department_name?: string;
+  job_title: string;
+  hire_date: string;
+  basic_salary: string | number;
+  housing_allowance: string | number;
+  transport_allowance: string | number;
+  other_allowances: string | number;
+  shift_hours: number;
+  is_active: boolean;
+  notes?: string;
+}
+
+export interface HRAttendance {
+  id: number;
+  employee_id: number;
+  employee_name: string;
+  employee_code: string;
+  job_title: string;
+  department_name?: string;
+  attendance_date: string;
+  status: 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'LATE' | 'VACATION';
+  check_in_time?: string;
+  check_out_time?: string;
+  late_minutes: number;
+  overtime_hours: string | number;
+  notes?: string;
+}
+
+export interface HRSalaryAdjustment {
+  id: number;
+  employee_id: number;
+  employee_name: string;
+  employee_code: string;
+  job_title: string;
+  type: 'ADVANCE' | 'BONUS' | 'DEDUCTION';
+  amount: string | number;
+  cycle_month: string;
+  reason: string;
+  effective_date: string;
+  is_settled: boolean;
+  created_by_name?: string;
+}
+
+export interface HRPayrollItem {
+  employeeId: number;
+  employeeCode: string;
+  employeeName: string;
+  jobTitle: string;
+  departmentName: string;
+  basicSalary: number;
+  allowances: number;
+  workingDays: number;
+  presentDays: number;
+  absentDays: number;
+  overtimeHours: number;
+  overtimeAmount: number;
+  bonusesAmount: number;
+  deductionsAmount: number;
+  advancesAmount: number;
+  netSalary: number;
+}
+
+export interface HRPayrollRun {
+  id: number;
+  cycle_code: string;
+  cycle_name: string;
+  start_date: string;
+  end_date: string;
+  total_basic: string | number;
+  total_allowances: string | number;
+  total_overtime: string | number;
+  total_bonuses: string | number;
+  total_deductions: string | number;
+  total_advances: string | number;
+  total_net_payable: string | number;
+  employee_count: number;
+  status: 'DRAFT' | 'APPROVED' | 'PAID';
+  approved_by_name?: string;
+  approved_at?: string;
+  created_at: string;
+}
+
+export interface HROverviewStats {
+  totalEmployees: number;
+  activeEmployees: number;
+  totalMonthlyPayroll: number;
+  presentToday: number;
+  absentToday: number;
+  lateToday: number;
+  openAdvances: number;
+}
+

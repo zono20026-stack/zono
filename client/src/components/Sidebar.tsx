@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Package, Wallet, Building2, Search, Users } from './icons';
+import { LayoutDashboard, Package, Wallet, Building2, Search, Users, Briefcase } from './icons';
 import { User } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -14,9 +14,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTab,
   user,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isFinanceAllowed = user && ['SUPER_ADMIN', 'ACCOUNTANT', 'BRANCH_MANAGER'].includes(user.role);
   const isBranchesAllowed = user && ['SUPER_ADMIN'].includes(user.role);
+  const isHrAllowed = user && ['SUPER_ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'DATA_ENTRY'].includes(user.role);
 
   return (
     <aside className="sidebar">
@@ -36,6 +37,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Package size={20} />
           <span>{t('navShipments')}</span>
         </button>
+
+        {isHrAllowed && (
+          <button
+            className={`nav-item ${currentTab === 'hr' ? 'active' : ''}`}
+            onClick={() => onSelectTab('hr')}
+          >
+            <Briefcase size={20} />
+            <span>{language === 'ar' ? 'الموارد البشرية' : 'HR & Staff'}</span>
+          </button>
+        )}
 
         <button
           className={`nav-item ${currentTab === 'directory' ? 'active' : ''}`}

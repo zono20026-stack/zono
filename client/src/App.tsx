@@ -9,6 +9,8 @@ import { PublicTrackingView } from './components/PublicTrackingView';
 import { FinanceView } from './components/FinanceView';
 import { BranchesView } from './components/BranchesView';
 import { DirectoryCodingView } from './components/DirectoryCodingView';
+import { HRView } from './components/HRView';
+import { CircularHubLauncher } from './components/CircularHubLauncher';
 import { WaybillModal } from './components/WaybillModal';
 import { LoginModal } from './components/LoginModal';
 import { SplashScreen } from './components/SplashScreen';
@@ -62,6 +64,8 @@ export const App: React.FC = () => {
             onPrintWaybill={(s) => setPrintShipment(s)}
           />
         );
+      case 'hr':
+        return <HRView user={user} />;
       case 'directory':
         return <DirectoryCodingView user={user} />;
       case 'tracking':
@@ -92,7 +96,7 @@ export const App: React.FC = () => {
         />
 
         <div className="app-body-layout">
-          {/* Sidebar */}
+          {/* Right-Hand Sidebar Navigation */}
           {user && !isPublicTrackingActive && (
             <Sidebar
               currentTab={currentTab}
@@ -104,8 +108,18 @@ export const App: React.FC = () => {
             />
           )}
 
-          {/* Main Content */}
+          {/* Main Content Area */}
           <main className="content-container">
+            {user && !isPublicTrackingActive && (
+              <CircularHubLauncher
+                currentTab={currentTab}
+                onSelectTab={(tab) => {
+                  setCurrentTab(tab);
+                  setIsPublicTrackingActive(false);
+                }}
+                user={user}
+              />
+            )}
             {renderContent()}
           </main>
         </div>
