@@ -790,7 +790,6 @@ body {
   .sidebar-nav {
     flex-direction: row;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     padding: 6px 10px;
     gap: 6px;
   }
