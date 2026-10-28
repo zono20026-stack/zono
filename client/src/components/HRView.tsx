@@ -852,14 +852,9 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
                   <Briefcase size={30} />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                    {language === 'ar' ? 'منظومة الموارد البشرية وشؤون الموظفين | ZONO HR' : 'ZONO Staff & HR Operations'}
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                    {language === 'ar' ? 'الموارد البشرية وشؤون الموظفين' : 'HR & Staff Operations'}
                   </h2>
-                  <p style={{ color: '#64748B', fontSize: '0.9rem', margin: '4px 0 0 0', fontWeight: 600 }}>
-                    {language === 'ar'
-                      ? 'بوابة تشغيل متكاملة | انقر على أي دائرة للدخول إلى شاشتها المتخصصة'
-                      : 'Integrated staff coding, biometric punches, geofence GPS, leaves, advances, and payroll'}
-                  </p>
                 </div>
               </div>
 
@@ -965,19 +960,10 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
               marginBottom: '24px',
             }}
           >
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 102, 0, 0.1)', color: 'var(--primary-orange)', padding: '6px 16px', borderRadius: 'var(--radius-full)', fontWeight: 800, fontSize: '0.88rem', marginBottom: '10px' }}>
-                <Briefcase size={16} />
-                <span>{language === 'ar' ? 'أقسام موديول الموارد البشرية' : 'HR Operation Sections'}</span>
-              </div>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', margin: '4px 0 0 0' }}>
-                {language === 'ar' ? 'اختر القسم المطلوب بالنقر على دائرته للدخول إلى شاشته المتخصصة' : 'Tap any circle below to launch its dedicated screen'}
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                {language === 'ar' ? 'أقسام الموارد البشرية' : 'HR Operation Sections'}
               </h3>
-              <p style={{ color: '#64748B', fontSize: '0.9rem', margin: '6px 0 0 0', fontWeight: 600 }}>
-                {language === 'ar'
-                  ? 'كل دائرة تمثل قسماً إدارياً مستقلاً بكامل البيانات، التقارير والعمليات'
-                  : 'Each circle leads to a dedicated workspace with full operations and reports'}
-              </p>
             </div>
 
             {/* The 10 Pure Circular Buttons Grid */}
@@ -998,40 +984,6 @@ export const HRView: React.FC<HRViewProps> = ({ user }) => {
                   </div>
                 </button>
               ))}
-            </div>
-
-            {/* Bottom Status Info */}
-            <div
-              style={{
-                borderTop: '1px solid var(--border-subtle)',
-                marginTop: '24px',
-                paddingTop: '16px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '10px',
-                fontSize: '0.85rem',
-                color: '#64748B',
-                fontWeight: 600,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span
-                  style={{
-                    width: '9px',
-                    height: '9px',
-                    borderRadius: '50%',
-                    background: '#10B981',
-                    display: 'inline-block',
-                    boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
-                  }}
-                />
-                <span>{language === 'ar' ? 'موديول شؤون الموظفين والبصمات متصل ومتزامن لحظياً مع قاعدة البيانات' : 'HR & Biometrics Module: Online & Live Synced'}</span>
-              </div>
-              <div>
-                {language === 'ar' ? '10 شاشات وأقسام إدارية متكاملة' : '10 Specialized HR Screens'}
-              </div>
             </div>
           </div>
         </>

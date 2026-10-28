@@ -7,8 +7,6 @@ import {
   Wallet,
   Building2,
   Briefcase,
-  ShieldCheck,
-  CheckCircle2
 } from './icons';
 import { useLanguage } from '../context/LanguageContext';
 import { User } from '../types';
@@ -29,16 +27,6 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
   const isFinanceAllowed = user && ['SUPER_ADMIN', 'ACCOUNTANT', 'BRANCH_MANAGER'].includes(user.role);
   const isBranchesAllowed = user && ['SUPER_ADMIN'].includes(user.role);
   const isHrAllowed = user && ['SUPER_ADMIN', 'BRANCH_MANAGER', 'ACCOUNTANT', 'DATA_ENTRY'].includes(user.role);
-
-  const getRoleLabel = (role?: string) => {
-    switch (role) {
-      case 'SUPER_ADMIN': return language === 'ar' ? 'المدير العام للمنظومة' : 'Super Admin';
-      case 'BRANCH_MANAGER': return language === 'ar' ? 'مدير فرع وتوزيع' : 'Branch Manager';
-      case 'ACCOUNTANT': return language === 'ar' ? 'مدير مالي ومحاسب' : 'Chief Accountant';
-      case 'DATA_ENTRY': return language === 'ar' ? 'مسؤول إدخال بيانات' : 'Data Entry';
-      default: return role || (language === 'ar' ? 'مستخدم معتمد' : 'Authorized User');
-    }
-  };
 
   const hubs = [
     {
@@ -101,36 +89,34 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
 
   return (
     <div className="zono-circular-launcher-container white-theme-launcher">
-      {/* Clean White Welcome Header */}
-      <div className="zono-launcher-welcome-banner-light">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-          <div className="zono-pulse-orb-light">
-            <span className="live-pulse-dot" />
-          </div>
-          <div>
-            <h2 className="launcher-main-greeting-light">
-              {language === 'ar'
-                ? `مرحباً بك، ${user?.name || 'مستخدم النظام'} 👋`
-                : `Welcome back, ${user?.name || 'User'} 👋`}
-            </h2>
-            <p className="launcher-sub-greeting-light">
-              {language === 'ar'
-                ? 'بوابة تشغيل منظومة زونو اللوجستية الذكية | انقر على أي دائرة لفتح القسم مباشرة'
-                : 'ZONO Smart Logistics Portal | Tap any circle to launch module'}
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div className="badge badge-orange" style={{ fontSize: '0.85rem', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <ShieldCheck size={15} />
-            <span>{getRoleLabel(user?.role)}</span>
-          </div>
-          <div className="badge badge-green" style={{ fontSize: '0.85rem', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <CheckCircle2 size={15} />
-            <span>{language === 'ar' ? 'متصل ومحمي' : 'Online & Secure'}</span>
-          </div>
-        </div>
+      {/* Clean Welcome Header - Only Greeting */}
+      <div
+        className="zono-launcher-welcome-banner-light"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          padding: '16px 20px',
+          marginBottom: '20px',
+          background: '#FFFFFF',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.03)',
+        }}
+      >
+        <h2
+          className="launcher-main-greeting-light"
+          style={{
+            margin: 0,
+            fontSize: '1.35rem',
+            fontWeight: 800,
+            color: '#0F172A',
+          }}
+        >
+          {language === 'ar'
+            ? `مرحباً بك، ${user?.name || 'مستخدم النظام'}`
+            : `Welcome, ${user?.name || 'User'}`}
+        </h2>
       </div>
 
       {/* Pure Circles Grid with Icon and Name INSIDE the circle */}
@@ -155,17 +141,6 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
             </button>
           );
         })}
-      </div>
-
-      {/* System Status Strip at bottom */}
-      <div className="zono-launcher-status-strip-light">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--accent-green)', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)' }} />
-          <span>{language === 'ar' ? 'خادم ZONO وقاعدة بيانات PostgreSQL 16: متصل ومتزامن لحظياً' : 'ZONO PostgreSQL 16 Server: Connected & Live Synced'}</span>
-        </div>
-        <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-          {language === 'ar' ? 'نظام النقل والتوزيع والشحن الموحد' : 'Unified Logistics & Courier ERP Platform'}
-        </div>
       </div>
     </div>
   );
