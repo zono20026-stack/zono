@@ -1,18 +1,22 @@
 import React from 'react';
 import { User } from '../types';
-import { LogOut, ShieldCheck, Compass } from './icons';
+import { LogOut, ShieldCheck, Compass, LayoutDashboard } from './icons';
 import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   user: User | null;
   onLogout: () => void;
   onOpenPublicTracking: () => void;
+  onGoHome?: () => void;
+  currentTab?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   user,
   onLogout,
   onOpenPublicTracking,
+  onGoHome,
+  currentTab,
 }) => {
   const { language, setLanguage, t } = useLanguage();
 
@@ -33,7 +37,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="top-navbar">
       {/* Brand Section: ZONO Logo & Name remain fixed */}
-      <div className="brand-section">
+      <div
+        className="brand-section"
+        style={{ cursor: onGoHome ? 'pointer' : 'default' }}
+        onClick={onGoHome}
+        title={language === 'ar' ? 'العودة للرئيسية وبوابة الأقسام' : 'Go to Home Hub'}
+      >
         <img
           src="/assets/zono_logo.jpeg"
           alt="ZONO Delivery Logo"
@@ -48,7 +57,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        {/* Quick Home Hub Button when inside sub-screens */}
+        {user && onGoHome && currentTab !== 'portal' && (
+          <button
+            type="button"
+            onClick={onGoHome}
+            className="btn btn-primary btn-sm"
+            title={language === 'ar' ? 'العودة لبوابة الأقسام الرئيسية (الدواير)' : 'Go to Main Hub'}
+            style={{ fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <LayoutDashboard size={16} />
+            <span>{language === 'ar' ? 'الدواير الرئيسية' : 'Main Hub'}</span>
+          </button>
+        )}
         {/* Language Switcher Pill */}
         <button
           type="button"

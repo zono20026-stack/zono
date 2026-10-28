@@ -197,16 +197,20 @@ body {
   font-weight: 600;
 }
 
-/* Sidebar Navigation */
-.sidebar {
-  width: 260px;
-  background-color: var(--surface-white);
-  border-left: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  transition: transform var(--transition-normal);
-  z-index: 50;
+/* Sidebar Navigation - Permanently removed (App uses Circular Hubs Portal) */
+.sidebar,
+aside.sidebar,
+[dir="ltr"] .sidebar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
 }
 
 .sidebar-nav {
@@ -742,27 +746,124 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
+/* Subview Navigation Header (Shown when inside any module to return to Portal) */
+.portal-subview-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  background: var(--surface-white);
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.back-to-portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  padding: 8px 18px;
+  background: var(--primary-orange);
+  color: #FFFFFF;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.25);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.back-to-portal-btn:hover {
+  transform: translateX(4px);
+  background: var(--primary-orange-hover);
+  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.35);
+}
+
+[dir="ltr"] .back-to-portal-btn:hover {
+  transform: translateX(-4px);
+}
+
+.portal-subview-title-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portal-subview-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.portal-subview-badge {
+  font-size: 0.92rem;
+  padding: 6px 16px;
+  font-weight: 800;
+}
+
 /* ==============================================================================
    ZONO CIRCULAR FEATURE HUBS (Springboard Launcher)
    ============================================================================== */
 .zono-circular-launcher-container {
-  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  background: linear-gradient(135deg, #0B0F19 0%, #161F30 100%);
   border: 1px solid var(--border-orange);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  border-radius: var(--radius-xl);
+  padding: 24px 28px;
   margin-bottom: 24px;
-  box-shadow: 0 10px 25px -5px rgba(255, 102, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 36px -8px rgba(255, 102, 0, 0.18), 0 6px 12px -4px rgba(0, 0, 0, 0.2);
 }
 
-.zono-circular-launcher-header {
+.zono-launcher-welcome-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 14px;
+}
+
+.zono-pulse-orb {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 102, 0, 0.15);
+  border: 1.5px solid var(--primary-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.launcher-main-greeting {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.launcher-sub-greeting {
+  font-size: 0.88rem;
+  color: #94A3B8;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.zono-launcher-status-strip {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #CBD5E1;
+  font-weight: 600;
 }
 
 .live-pulse-dot {
@@ -778,18 +879,6 @@ body {
 @keyframes pulseDot {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.3); opacity: 0.6; }
-}
-
-.launcher-title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #FFFFFF;
-}
-
-.launcher-subtitle {
-  font-size: 0.78rem;
-  color: #94A3B8;
-  font-weight: 600;
 }
 
 .zono-circular-hubs-grid {
@@ -1025,70 +1114,20 @@ body {
     font-size: 0.75rem;
   }
 
-  /* Compact Right-hand vertical rail for mobile (tabs stay on the right!) */
+  /* Sidebar completely removed */
   .sidebar {
-    width: 70px !important;
-    min-width: 70px !important;
-    position: sticky;
-    top: 57px;
-    height: calc(100vh - 57px);
-    z-index: 35;
-    border-left: 1px solid var(--border-subtle);
-    border-bottom: none;
-    background: var(--surface-white);
-    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
+    display: none !important;
   }
 
-  .sidebar-nav {
-    flex-direction: column !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    padding: 6px 3px !important;
-    gap: 6px !important;
-  }
-
-  .sidebar-nav::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  .sidebar-nav::-webkit-scrollbar-thumb {
-    background: var(--border-orange);
-    border-radius: 4px;
-  }
-
-  .nav-item {
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 8px 2px !important;
-    text-align: center !important;
-    white-space: normal !important;
-    border-radius: var(--radius-md) !important;
-    gap: 2px !important;
-  }
-
-  .nav-item span {
-    font-size: 0.65rem !important;
+  .app-body-layout {
     display: block !important;
-    line-height: 1.1;
-    max-width: 64px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .nav-item svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 100% !important;
   }
 
   .content-container {
-    padding: 10px;
-    flex: 1;
-    min-width: 0;
-    overflow-x: hidden;
+    padding: 12px 10px;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .zono-circular-launcher-container {
@@ -1209,13 +1248,7 @@ body {
 
 @media (max-width: 420px) {
   .sidebar {
-    width: 62px !important;
-    min-width: 62px !important;
-  }
-
-  .nav-item span {
-    font-size: 0.6rem !important;
-    max-width: 56px;
+    display: none !important;
   }
 
   .zono-circular-hubs-grid {
