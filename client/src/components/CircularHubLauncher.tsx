@@ -119,28 +119,30 @@ export const CircularHubLauncher: React.FC<CircularHubLauncherProps> = ({
         </h2>
       </div>
 
-      {/* Pure Circles Grid with Icon and Name INSIDE the circle */}
-      <div className="zono-pure-circles-grid">
-        {hubs.filter((h) => h.visible).map((hub) => {
-          const isActive = currentTab === hub.id;
-          return (
-            <button
-              key={hub.id}
-              type="button"
-              onClick={() => onSelectTab(hub.id)}
-              className={`zono-circle-tab-btn ${hub.colorClass} ${isActive ? 'is-active' : ''}`}
-              title={hub.label}
-            >
-              <div className="zono-tab-circle">
-                <div className="tab-circle-icon">{hub.icon}</div>
-                <span className="tab-circle-title">{hub.label}</span>
-                {hub.badge && (
-                  <span className="circle-bubble-badge">{hub.badge}</span>
-                )}
-              </div>
-            </button>
-          );
-        })}
+      {/* Opening Banner Image as Background for the Circles Grid */}
+      <div className="zono-launcher-hero-card">
+        <div className="zono-pure-circles-grid" style={{ padding: 0 }}>
+          {hubs.filter((h) => h.visible).map((hub) => {
+            const isActive = currentTab === hub.id;
+            return (
+              <button
+                key={hub.id}
+                type="button"
+                onClick={() => onSelectTab(hub.id)}
+                className={`zono-circle-tab-btn ${hub.colorClass} ${isActive ? 'is-active' : ''}`}
+                title={hub.label}
+              >
+                <div className="zono-tab-circle">
+                  <div className="tab-circle-icon">{hub.icon}</div>
+                  <span className="tab-circle-title">{hub.label}</span>
+                  {hub.badge && (
+                    <span className="circle-bubble-badge">{hub.badge}</span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
