@@ -28,13 +28,20 @@ const PORT = process.env.PORT || 5000;
 
 // Security & Optimization Middleware
 app.use(helmet({
+  contentSecurityPolicy: false,
   crossOriginResourcePolicy: false,
 }));
 app.use(compression());
 // CORS Configuration - Multi-origin protection
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://easy-send-erp.com'];
+  : [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5000',
+      'http://127.0.0.1:5000',
+      'https://easy-send-erp.com',
+    ];
 
 app.use(
   cors({
