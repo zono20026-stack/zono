@@ -12,9 +12,15 @@ export const pool = new Pool(
   databaseUrl
     ? {
         connectionString: databaseUrl,
-        ssl: isProduction || databaseUrl.includes('render.com') || databaseUrl.includes('neon.tech')
-          ? { rejectUnauthorized: false }
-          : false,
+        ssl:
+          isProduction ||
+          databaseUrl.includes('render.com') ||
+          databaseUrl.includes('neon.tech') ||
+          databaseUrl.includes('supabase.co') ||
+          databaseUrl.includes('supabase.com') ||
+          databaseUrl.includes('pooler.supabase.com')
+            ? { rejectUnauthorized: false }
+            : false,
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
