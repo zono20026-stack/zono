@@ -46,8 +46,16 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile app, native HTTP clients) or explicitly allowed origins
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      // Allow requests with no origin (mobile app, native HTTP clients), dev mode, or allowed origins
+      if (
+        !origin ||
+        process.env.NODE_ENV !== 'production' ||
+        allowedOrigins.includes(origin) ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.includes('192.168.') ||
+        origin.includes('trycloudflare.com')
+      ) {
         return callback(null, true);
       }
       return callback(new Error('CORS Not Allowed for this Origin'), false);
